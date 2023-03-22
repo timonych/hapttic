@@ -16,17 +16,66 @@ The basic idea is pretty similar. The main advantage of hapttic is ease of setup
 
 ## Show me an example
 
-First, create a request handler at `~/hapttic_request_handler.sh`:
+### Simple run with default parameters and script
+`docker run --rm -p 8080:8080 --name hapttic timonych/hapttic:v2.0.0`
 
-```bash
-echo $1
+### Run with predefined shell script
+#### Create Shell Script `~/shellScript.sh`:
+```
+cat <<EOF > ~/shellScript.sh
+#!/bin/sh
+echo \$1
+EOF
 ```
 
+#### Run Docker
 Then run the following command to spin up the docker container that runs hapttic:
+`docker run --rm -p 8080:8080 -v ~/shellScript.sh:/usr/src/app/shellScript.sh --name hapttic timonych/hapttic:v2.0.0 -script "./shellScript.sh"`
+#### Run cURL to see the output
+`curl http://localhost:8080 -d '{"key" : "value"}'` 
 
-`docker run --rm -p 8080:8080 -v ~/hapttic_request_handler.sh:/hapttic_request_handler.sh --name hapttic jsoendermann/hapttic -file "/hapttic_request_handler.sh"`
 
-Finally, run `open http://localhost:8080` to see the output of your script.
+### Run with config.yml with multiple scripts and rootPath
+#### Create `hapttic-config.yml`
+```
+cat <<EOF > ~/hapttic-config.yml
+bind: 0.0.0.0
+port: 8080
+error: false
+scripts:
+  # rootPath: scriptPath (Relative Path according to hapttic Path)
+  # rootPath should start with /. If not prefix / will be addedd automaticaly
+  script1: ./shellScripts/script1.sh
+  /script2: ./shellScripts/script2.sh
+EOF
+```
+#### Create `script1.sh` and `script2.sh`
+```
+mkdir -p ~/shellScripts
+```
+```
+cat <<EOF > ~/shellScripts/script1.sh
+#!/bin/sh
+echo "This is $(basename \$0)"
+echo \$1 2>&1 
+EOF
+```
+```
+cat <<EOF > ~/shellScripts/script2.sh
+#!/bin/sh
+echo "This is $(basename \$0)"
+echo \$1 2>&1 
+EOF
+```
+
+#### Run Docker
+Then run the following command to spin up the docker container that runs hapttic:
+`docker run --rm -p 8080:8080 -v ~/shellScripts:/usr/app/shellScripts -v ~/hapttic-config.yml:/config.yml --name hapttic timonych/hapttic:v2.0.0 -config "/config.yml"`
+#### Run cURL to see the output
+```
+curl http://localhost:8080/script1 -d '{"key1" : "value1"}'
+curl http://localhost:8080/script2 -d '{"key2" : "value2"}'
+```
 
 ## Show me a more realistic example
 

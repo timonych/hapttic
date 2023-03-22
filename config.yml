@@ -1,0 +1,10 @@
+bind: 127.0.0.1
+port: 8080
+error: false
+scripts:
+  # rootPath: scriptPath (Relative Path according to hapttic Path)
+  # rootPath should start with /. If prefix / not exist, prefix will be addedd automaticaly
+  script1: ./shellScripts/script1.sh
+  /script2: ./shellScripts/script2.sh
+  /script/script3: ./shellScripts/script3.sh
+  /script/script4: ./shellScripts/script4.sh
